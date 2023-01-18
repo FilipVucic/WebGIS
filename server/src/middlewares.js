@@ -6,17 +6,7 @@ const notFound = (req, res, next) => {
 
 const errorHandler = (error, req, res, next) => {
     res.status(res.statusCode === 200 ? 500 : res.statusCode);
-
-    const ret = {
-        message: error.message,
-        stack: process.env.NODE_ENV === "production" ? undefined : error.stack,
-    };
-
-    if (process.env.NODE_ENV === "production") {
-        delete ret.stack;
-    }
-
-    res.json(ret);
+    res.json({ message: error.message || ":(" });
 };
 
 module.exports = {
