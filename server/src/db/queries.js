@@ -19,36 +19,43 @@ async function getFiresInInterval(fromTime, toTime) {
     return rows;
 }
 
-async function getRasterIdBeforeFire(fireId, intervalBeforeFire = "1 day") {
+async function getRastersBeforeFire(
+    fireId,
+    length = 5,
+    intervalBeforeFire = "1 day"
+) {
     const sql = `
     SELECT id, lst.rid, lst.datum
     FROM podaci, lst
     WHERE (id, datum) IN (
-        SELECT id, MAX(datum) datum
+        SELECT id, datum
         FROM podaci, lst
         WHERE id = $1
             AND datum <= (initialdat::timestamp - $2::interval)
-        GROUP BY id
+        ORDER BY datum DESC
+        LIMIT $3
     );`;
-    const { rows } = await db.query(sql, [fireId, intervalBeforeFire]);
+    const { rows } = await db.query(sql, [fireId, intervalBeforeFire, length]);
 
-    if (rows.length) return rows[0].rid;
+    if (rows.length) return rows;
     else throw Error(`Can't find raster before fireId=${fireId}`);
 }
 
 async function getSoilTypeForFire(fireId) {
-    const rid = await getRasterIdBeforeFire(fireId);
+    const ret = await getRastersBeforeFire(fireId);
+    console.log(JSON.stringify(ret));
+    const rids = ret.map((r) => r.rid);
 
     const sql = `
     SELECT (pvc).value, SUM((pvc).count) AS total
     FROM (
         SELECT id, place_name, ST_ValueCount(rast2,2) AS pvc
         FROM lst, podaci, ST_Clip(rast, geom) AS rast2
-        WHERE podaci.id = $1 AND rid = $2
+        WHERE podaci.id = $1 AND rid = ANY($2)
     ) AS foo
     GROUP BY (pvc).value
     ORDER BY (pvc).value;`;
-    const { rows } = await db.query(sql, [fireId, rid]);
+    const { rows } = await db.query(sql, [fireId, rids]);
 
     return rows;
 }
