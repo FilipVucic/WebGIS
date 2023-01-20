@@ -1,12 +1,13 @@
 const {
     getBoltsBeforeFire,
     getFiresInInterval,
-    getSoilTypeForFireAndRasters,
+    getBiomeForFireAndRasters,
     getRastersBeforeFire,
     getRastersAfterFire,
     getPowerTowersForFire,
     getPowerLinesForFire,
     getRoadsForFire,
+    getPowerStationsForFire,
 } = require("../db/queries");
 
 const router = require("express").Router();
@@ -59,14 +60,14 @@ router.get("/", async (req, res, next) => {
     getFiresInInterval(fromTime, toTime)
         .then((fires) => res.json(fires))
         .catch((err) => {
-            console.err(err);
+            console.error(err);
             next(err);
         });
 });
 
-function calculateBiomsPercentage(soilType) {
+function calculateBiomsPercentage(biome) {
     // for some reason no-values are classified 0, same as "Open ocean"
-    const soil = soilType.filter((vt) => vt.value !== 0);
+    const soil = biome.filter((vt) => vt.value !== 0);
     const sum = soil.reduce((acc, vt) => acc + +vt.total, 0);
     const ret = {};
     soil.forEach(
@@ -82,12 +83,9 @@ async function getBiomBeforeFire(fireId) {
         return {};
     }
 
-    const soilTypeBefore = await getSoilTypeForFireAndRasters(
-        fireId,
-        ridsBefore
-    );
+    const biomeBefore = await getBiomeForFireAndRasters(fireId, ridsBefore);
 
-    return calculateBiomsPercentage(soilTypeBefore);
+    return calculateBiomsPercentage(biomeBefore);
 }
 
 async function getBiomAfterFire(fireId) {
@@ -96,9 +94,9 @@ async function getBiomAfterFire(fireId) {
         return {};
     }
 
-    const soilTypeAfter = await getSoilTypeForFireAndRasters(fireId, ridsAfter);
+    const biomeAfter = await getSoilTypeForFireAndRasters(fireId, ridsAfter);
 
-    return calculateBiomsPercentage(soilTypeAfter);
+    return calculateBiomsPercentage(biomeAfter);
 }
 
 router.get("/:fireId/biome", async (req, res, next) => {
@@ -115,7 +113,7 @@ router.get("/:fireId/biome", async (req, res, next) => {
             after,
         });
     } catch (err) {
-        console.err(err);
+        console.error(err);
         next(err);
     }
 });
@@ -126,7 +124,18 @@ router.get("/:fireId/bolts", async (req, res, next) => {
     getBoltsBeforeFire(fireId)
         .then((bolts) => res.json(bolts.map(parseBolt)))
         .catch((err) => {
-            console.err(err);
+            console.error(err);
+            next(err);
+        });
+});
+
+router.get("/:fireId/power-stations", async (req, res, next) => {
+    const fireId = +req.params.fireId;
+
+    getPowerStationsForFire(fireId)
+        .then((station) => res.json(station))
+        .catch((err) => {
+            console.error(err);
             next(err);
         });
 });
@@ -137,7 +146,7 @@ router.get("/:fireId/power-towers", async (req, res, next) => {
     getPowerTowersForFire(fireId)
         .then((towers) => res.json(towers))
         .catch((err) => {
-            console.err(err);
+            console.error(err);
             next(err);
         });
 });
@@ -148,7 +157,7 @@ router.get("/:fireId/power-lines", async (req, res, next) => {
     getPowerLinesForFire(fireId)
         .then((lines) => res.json(lines))
         .catch((err) => {
-            console.err(err);
+            console.error(err);
             next(err);
         });
 });
@@ -159,7 +168,7 @@ router.get("/:fireId/roads", async (req, res, next) => {
     getRoadsForFire(fireId)
         .then((roads) => res.json(roads))
         .catch((err) => {
-            console.err(err);
+            console.error(err);
             next(err);
         });
 });

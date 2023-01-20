@@ -61,7 +61,7 @@ async function getRastersAfterFire(
     return rows;
 }
 
-async function getSoilTypeForFireAndRasters(fireId, rids) {
+async function getBiomeForFireAndRasters(fireId, rids) {
     const sql = `
         SELECT (pvc).value, SUM((pvc).count) AS total
         FROM (
@@ -90,8 +90,24 @@ async function getBoltsBeforeFire(fireId) {
                 initialdat::timestamp - '1 days'::interval
                 AND initialdat::timestamp
             AND ST_Overlaps(ST_Buffer(podaci.geom, 200), ST_Buffer(munja.geom, greska));`;
-
     const { rows } = await db.query(sql, [fireId]);
+
+    return rows;
+}
+
+async function getPowerStationsForFire(fireId) {
+    const sql = `
+        SELECT
+            power_station.id,
+            type,
+            ST_Distance(podaci.geom, power_station.geom) as distance,
+            ST_AsGeoJSON(power_station.geom)::jsonb AS geom
+        FROM power_station, podaci
+        WHERE
+            podaci.id = $1
+            AND ST_Distance(podaci.geom, power_station.geom) < 2000;`;
+    const { rows } = await db.query(sql, [fireId]);
+
     return rows;
 }
 
@@ -99,14 +115,14 @@ async function getPowerTowersForFire(fireId) {
     const sql = `
         SELECT
             power_tower.id,
-            power as type,
+            type,
             ST_AsGeoJSON(power_tower.geom)::jsonb AS geom
         FROM power_tower, podaci
         WHERE
             podaci.id = $1
             AND ST_Contains(podaci.geom, power_tower.geom);`;
-
     const { rows } = await db.query(sql, [fireId]);
+
     return rows;
 }
 
@@ -115,15 +131,15 @@ async function getPowerLinesForFire(fireId) {
         SELECT
             power_line.id,
             power_line.name,
-            power as type,
+            type,
             voltage,
             ST_AsGeoJSON(power_line.geom)::jsonb AS geom
         FROM power_line, podaci
         WHERE
             podaci.id = $1
             AND ST_Intersects(podaci.geom, power_line.geom);`;
-
     const { rows } = await db.query(sql, [fireId]);
+
     return rows;
 }
 
@@ -140,8 +156,8 @@ async function getRoadsForFire(fireId) {
         WHERE
             podaci.id = $1
             AND ST_Intersects(podaci.geom, road.geom);`;
-
     const { rows } = await db.query(sql, [fireId]);
+
     return rows;
 }
 
@@ -149,8 +165,9 @@ module.exports = {
     getFiresInInterval,
     getRastersBeforeFire,
     getRastersAfterFire,
-    getSoilTypeForFireAndRasters,
+    getBiomeForFireAndRasters,
     getBoltsBeforeFire,
+    getPowerStationsForFire,
     getPowerTowersForFire,
     getPowerLinesForFire,
     getRoadsForFire,
