@@ -127,6 +127,24 @@ async function getPowerLinesForFire(fireId) {
     return rows;
 }
 
+async function getRoadsForFire(fireId) {
+    const sql = `
+        SELECT
+            road.id,
+            road.name,
+            road.reg_name,
+            road.route,
+            road.ref,
+            ST_AsGeoJSON(road.geom)::jsonb AS geom
+        FROM road, podaci
+        WHERE
+            podaci.id = $1
+            AND ST_Intersects(podaci.geom, road.geom);`;
+
+    const { rows } = await db.query(sql, [fireId]);
+    return rows;
+}
+
 module.exports = {
     getFiresInInterval,
     getRastersBeforeFire,
@@ -135,4 +153,5 @@ module.exports = {
     getBoltsBeforeFire,
     getPowerTowersForFire,
     getPowerLinesForFire,
+    getRoadsForFire,
 };

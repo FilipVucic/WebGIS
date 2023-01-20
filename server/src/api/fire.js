@@ -6,6 +6,7 @@ const {
     getRastersAfterFire,
     getPowerTowersForFire,
     getPowerLinesForFire,
+    getRoadsForFire,
 } = require("../db/queries");
 
 const router = require("express").Router();
@@ -146,6 +147,17 @@ router.get("/:fireId/power-lines", async (req, res, next) => {
 
     getPowerLinesForFire(fireId)
         .then((lines) => res.json(lines))
+        .catch((err) => {
+            console.err(err);
+            next(err);
+        });
+});
+
+router.get("/:fireId/roads", async (req, res, next) => {
+    const fireId = +req.params.fireId;
+
+    getRoadsForFire(fireId)
+        .then((roads) => res.json(roads))
         .catch((err) => {
             console.err(err);
             next(err);
