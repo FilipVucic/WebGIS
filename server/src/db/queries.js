@@ -11,8 +11,9 @@ async function getFiresInInterval(fromTime, toTime) {
             providence,
             ST_AsGeoJSON(geom)::jsonb AS geom
         FROM podaci
-        WHERE initialdat::timestamp >= $1::timestamp
-            AND finaldate::timestamp <= $2::timestamp
+        WHERE
+            initialdat::timestamp >= $1::timestamp AND
+            finaldate::timestamp <= $2::timestamp
         LIMIT 50`;
     const { rows } = await db.query(sql, [fromTime, toTime]);
 
@@ -30,8 +31,9 @@ async function getRastersBeforeFire(
         WHERE (id, datum) IN (
             SELECT id, datum
             FROM podaci, lst
-            WHERE id = $1
-                AND datum <= (initialdat::timestamp - $2::interval)
+            WHERE
+                id = $1 AND
+                datum <= (initialdat::timestamp - $2::interval)
             ORDER BY datum DESC
             LIMIT $3
         );`;
@@ -51,8 +53,9 @@ async function getRastersAfterFire(
         WHERE (id, datum) IN (
             SELECT id, datum
             FROM podaci, lst
-            WHERE id = $1
-                AND datum >= (finaldate::timestamp + $2::interval)
+            WHERE
+                id = $1 AND
+                datum >= (finaldate::timestamp + $2::interval)
             ORDER BY datum ASC
             LIMIT $3
         );`;
@@ -85,11 +88,12 @@ async function getBoltsBeforeFire(fireId) {
             ST_AsGeoJSON(munja.geom)::jsonb AS geom
         FROM munje2022 munja, podaci
         WHERE
-            podaci.id = $1
-            AND vrijeme_munje BETWEEN
-                initialdat::timestamp - '1 days'::interval
-                AND initialdat::timestamp
-            AND ST_Overlaps(ST_Buffer(podaci.geom, 200), ST_Buffer(munja.geom, greska));`;
+            podaci.id = $1 AND
+            vrijeme_munje BETWEEN
+                initialdat::timestamp - '1 days'::interval AND
+                initialdat::timestamp
+                AND
+            ST_Overlaps(ST_Buffer(podaci.geom, 200), ST_Buffer(munja.geom, greska));`;
     const { rows } = await db.query(sql, [fireId]);
 
     return rows;
@@ -104,8 +108,8 @@ async function getPowerStationsForFire(fireId) {
             ST_AsGeoJSON(power_station.geom)::jsonb AS geom
         FROM power_station, podaci
         WHERE
-            podaci.id = $1
-            AND ST_Distance(podaci.geom, power_station.geom) < 2000;`;
+            podaci.id = $1 AND
+            ST_Distance(podaci.geom, power_station.geom) < 2000;`;
     const { rows } = await db.query(sql, [fireId]);
 
     return rows;
@@ -119,8 +123,8 @@ async function getPowerTowersForFire(fireId) {
             ST_AsGeoJSON(power_tower.geom)::jsonb AS geom
         FROM power_tower, podaci
         WHERE
-            podaci.id = $1
-            AND ST_Contains(podaci.geom, power_tower.geom);`;
+            podaci.id = $1 AND
+            ST_Contains(podaci.geom, power_tower.geom);`;
     const { rows } = await db.query(sql, [fireId]);
 
     return rows;
@@ -136,8 +140,8 @@ async function getPowerLinesForFire(fireId) {
             ST_AsGeoJSON(power_line.geom)::jsonb AS geom
         FROM power_line, podaci
         WHERE
-            podaci.id = $1
-            AND ST_Intersects(podaci.geom, power_line.geom);`;
+            podaci.id = $1 AND
+            ST_Intersects(podaci.geom, power_line.geom);`;
     const { rows } = await db.query(sql, [fireId]);
 
     return rows;

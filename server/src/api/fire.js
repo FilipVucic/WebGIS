@@ -52,10 +52,8 @@ function parseBolt(bolt) {
 }
 
 router.get("/", async (req, res, next) => {
-    const fromTime =
-        req.query.from ||
-        new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(); // else week ago
-    const toTime = req.query.to || "now";
+    const fromTime = req.query.from || "2022-08-06";
+    const toTime = req.query.to || "2022-08-13";
 
     getFiresInInterval(fromTime, toTime)
         .then((fires) => res.json(fires))
