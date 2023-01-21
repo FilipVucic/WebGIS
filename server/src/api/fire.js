@@ -48,7 +48,26 @@ function parseBolt(bolt) {
     for (const f of ["pol", "struja", "tip", "gps_koordinate"]) {
         if (bolt[f]) bolt[f] = bolt[f].replace(/\"+/g, "");
     }
+    bolt["struja"] = +bolt["struja"];
+
     return bolt;
+}
+
+function wrapAsFeature(a) {
+    const { id, geom, ...properties } = a;
+    return {
+        type: "Feature",
+        id,
+        properties,
+        geometry: geom,
+    };
+}
+
+function wrapAsFeatureCollection(as) {
+    return {
+        type: "FeatureCollection",
+        features: as.map(wrapAsFeature),
+    };
 }
 
 router.get("/", async (req, res, next) => {
@@ -56,6 +75,7 @@ router.get("/", async (req, res, next) => {
     const toTime = req.query.to || "2022-08-13";
 
     getFiresInInterval(fromTime, toTime)
+        .then(wrapAsFeatureCollection)
         .then((fires) => res.json(fires))
         .catch((err) => {
             console.error(err);
@@ -92,7 +112,7 @@ async function getBiomAfterFire(fireId) {
         return {};
     }
 
-    const biomeAfter = await getSoilTypeForFireAndRasters(fireId, ridsAfter);
+    const biomeAfter = await getBiomeForFireAndRasters(fireId, ridsAfter);
 
     return calculateBiomsPercentage(biomeAfter);
 }
@@ -120,7 +140,9 @@ router.get("/:fireId/bolts", async (req, res, next) => {
     const fireId = +req.params.fireId;
 
     getBoltsBeforeFire(fireId)
-        .then((bolts) => res.json(bolts.map(parseBolt)))
+        .then((bolts) => bolts.map(parseBolt))
+        .then(wrapAsFeatureCollection)
+        .then((bolts) => res.json(bolts))
         .catch((err) => {
             console.error(err);
             next(err);
@@ -131,6 +153,7 @@ router.get("/:fireId/power-stations", async (req, res, next) => {
     const fireId = +req.params.fireId;
 
     getPowerStationsForFire(fireId)
+        .then(wrapAsFeatureCollection)
         .then((station) => res.json(station))
         .catch((err) => {
             console.error(err);
@@ -142,6 +165,7 @@ router.get("/:fireId/power-towers", async (req, res, next) => {
     const fireId = +req.params.fireId;
 
     getPowerTowersForFire(fireId)
+        .then(wrapAsFeatureCollection)
         .then((towers) => res.json(towers))
         .catch((err) => {
             console.error(err);
@@ -153,6 +177,7 @@ router.get("/:fireId/power-lines", async (req, res, next) => {
     const fireId = +req.params.fireId;
 
     getPowerLinesForFire(fireId)
+        .then(wrapAsFeatureCollection)
         .then((lines) => res.json(lines))
         .catch((err) => {
             console.error(err);
@@ -164,6 +189,7 @@ router.get("/:fireId/roads", async (req, res, next) => {
     const fireId = +req.params.fireId;
 
     getRoadsForFire(fireId)
+        .then(wrapAsFeatureCollection)
         .then((roads) => res.json(roads))
         .catch((err) => {
             console.error(err);

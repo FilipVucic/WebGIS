@@ -9,7 +9,7 @@ async function getFiresInInterval(fromTime, toTime) {
             area_ha,
             place_name,
             providence,
-            ST_AsGeoJSON(geom)::jsonb AS geom
+            ST_AsGeoJSON(ST_Transform(geom, 4326))::jsonb AS geom
         FROM podaci
         WHERE
             initialdat::timestamp >= $1::timestamp AND
@@ -85,7 +85,7 @@ async function getBoltsBeforeFire(fireId) {
             munja.id,
             vrijeme_munje,
             struja,
-            ST_AsGeoJSON(munja.geom)::jsonb AS geom
+            ST_AsGeoJSON(ST_Transform(munja.geom, 4326))::jsonb AS geom
         FROM munje2022 munja, podaci
         WHERE
             podaci.id = $1 AND
@@ -105,7 +105,7 @@ async function getPowerStationsForFire(fireId) {
             power_station.id,
             type,
             ST_Distance(podaci.geom, power_station.geom) as distance,
-            ST_AsGeoJSON(power_station.geom)::jsonb AS geom
+            ST_AsGeoJSON(ST_Transform(power_station.geom, 4326))::jsonb AS geom
         FROM power_station, podaci
         WHERE
             podaci.id = $1 AND
@@ -120,7 +120,7 @@ async function getPowerTowersForFire(fireId) {
         SELECT
             power_tower.id,
             type,
-            ST_AsGeoJSON(power_tower.geom)::jsonb AS geom
+            ST_AsGeoJSON(ST_Transform(power_tower.geom, 4326))::jsonb AS geom
         FROM power_tower, podaci
         WHERE
             podaci.id = $1 AND
@@ -137,7 +137,7 @@ async function getPowerLinesForFire(fireId) {
             power_line.name,
             type,
             voltage,
-            ST_AsGeoJSON(power_line.geom)::jsonb AS geom
+            ST_AsGeoJSON(ST_Transform(power_line.geom, 4326))::jsonb AS geom
         FROM power_line, podaci
         WHERE
             podaci.id = $1 AND
@@ -155,7 +155,7 @@ async function getRoadsForFire(fireId) {
             road.reg_name,
             road.route,
             road.ref,
-            ST_AsGeoJSON(road.geom)::jsonb AS geom
+            ST_AsGeoJSON(ST_Transform(road.geom, 4326))::jsonb AS geom
         FROM road, podaci
         WHERE
             podaci.id = $1
