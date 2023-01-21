@@ -8,7 +8,6 @@ const {
     getPowerLinesForFire,
     getRoadsForFire,
     getPowerStationsForFire,
-    isBoltCaused,
 } = require("../db/queries");
 
 const router = require("express").Router();
@@ -78,11 +77,17 @@ router.get("/", async (req, res, next) => {
     try {
         const fires = await getFiresInInterval(fromTime, toTime);
 
+        const allBolts = [];
         for (const fire of fires) {
-            fire.boltCaused = await isBoltCaused(fire.id);
+            allBolts.push(
+                ...(await getBoltsBeforeFire(fire.id)).map(parseBolt)
+            );
         }
 
-        res.json(wrapAsFeatureCollection(fires));
+        res.json({
+            fires: wrapAsFeatureCollection(fires),
+            bolts: wrapAsFeatureCollection(allBolts),
+        });
     } catch (err) {
         console.error(err);
         next(err);
