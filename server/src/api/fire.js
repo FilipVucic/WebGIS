@@ -96,23 +96,27 @@ router.get("/", async (req, res, next) => {
 
 router.get("/:fireId/details", async (req, res, next) => {
     const fireId = +req.params.fireId;
+    try {
+        const [biome, powerStations, powerTowers, powerLines, roads] =
+            await Promise.all([
+                getBiomeForFire(fireId),
+                getPowerStationsForFire(fireId),
+                getPowerTowersForFire(fireId),
+                getPowerLinesForFire(fireId),
+                getRoadsForFire(fireId),
+            ]);
 
-    const [biome, powerStations, powerTowers, powerLines, roads] =
-        await Promise.all([
-            getBiomeForFire(fireId),
-            getPowerStationsForFire(fireId),
-            getPowerTowersForFire(fireId),
-            getPowerLinesForFire(fireId),
-            getRoadsForFire(fireId),
-        ]);
-
-    res.json({
-        biome,
-        powerStations: wrapAsFeatureCollection(powerStations),
-        powerTowers: wrapAsFeatureCollection(powerTowers),
-        powerLines: wrapAsFeatureCollection(powerLines),
-        roads: wrapAsFeatureCollection(roads),
-    });
+        res.json({
+            biome,
+            powerStations: wrapAsFeatureCollection(powerStations),
+            powerTowers: wrapAsFeatureCollection(powerTowers),
+            powerLines: wrapAsFeatureCollection(powerLines),
+            roads: wrapAsFeatureCollection(roads),
+        });
+    } catch (err) {
+        console.error(err);
+        next(err);
+    }
 });
 
 function calculateBiomsPercentage(biome) {
