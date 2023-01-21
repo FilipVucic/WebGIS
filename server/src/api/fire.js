@@ -94,6 +94,27 @@ router.get("/", async (req, res, next) => {
     }
 });
 
+router.get("/:fireId/details", async (req, res, next) => {
+    const fireId = +req.params.fireId;
+
+    const [biome, powerStations, powerTowers, powerLines, roads] =
+        await Promise.all([
+            getBiomeForFire(fireId),
+            getPowerStationsForFire(fireId),
+            getPowerTowersForFire(fireId),
+            getPowerLinesForFire(fireId),
+            getRoadsForFire(fireId),
+        ]);
+
+    res.json({
+        biome,
+        powerStations: wrapAsFeatureCollection(powerStations),
+        powerTowers: wrapAsFeatureCollection(powerTowers),
+        powerLines: wrapAsFeatureCollection(powerLines),
+        roads: wrapAsFeatureCollection(roads),
+    });
+});
+
 function calculateBiomsPercentage(biome) {
     // for some reason no-values are classified 0, same as "Open ocean"
     const soil = biome.filter((vt) => vt.value !== 0);
@@ -128,84 +149,16 @@ async function getBiomAfterFire(fireId) {
     return calculateBiomsPercentage(biomeAfter);
 }
 
-router.get("/:fireId/biome", async (req, res, next) => {
-    const fireId = +req.params.fireId;
+async function getBiomeForFire(fireId) {
+    const [before, after] = await Promise.all([
+        getBiomBeforeFire(fireId),
+        getBiomAfterFire(fireId),
+    ]);
 
-    try {
-        const [before, after] = await Promise.all([
-            getBiomBeforeFire(fireId),
-            getBiomAfterFire(fireId),
-        ]);
-
-        res.json({
-            before,
-            after,
-        });
-    } catch (err) {
-        console.error(err);
-        next(err);
-    }
-});
-
-router.get("/:fireId/bolts", async (req, res, next) => {
-    const fireId = +req.params.fireId;
-
-    getBoltsBeforeFire(fireId)
-        .then((bolts) => bolts.map(parseBolt))
-        .then(wrapAsFeatureCollection)
-        .then((bolts) => res.json(bolts))
-        .catch((err) => {
-            console.error(err);
-            next(err);
-        });
-});
-
-router.get("/:fireId/power-stations", async (req, res, next) => {
-    const fireId = +req.params.fireId;
-
-    getPowerStationsForFire(fireId)
-        .then(wrapAsFeatureCollection)
-        .then((station) => res.json(station))
-        .catch((err) => {
-            console.error(err);
-            next(err);
-        });
-});
-
-router.get("/:fireId/power-towers", async (req, res, next) => {
-    const fireId = +req.params.fireId;
-
-    getPowerTowersForFire(fireId)
-        .then(wrapAsFeatureCollection)
-        .then((towers) => res.json(towers))
-        .catch((err) => {
-            console.error(err);
-            next(err);
-        });
-});
-
-router.get("/:fireId/power-lines", async (req, res, next) => {
-    const fireId = +req.params.fireId;
-
-    getPowerLinesForFire(fireId)
-        .then(wrapAsFeatureCollection)
-        .then((lines) => res.json(lines))
-        .catch((err) => {
-            console.error(err);
-            next(err);
-        });
-});
-
-router.get("/:fireId/roads", async (req, res, next) => {
-    const fireId = +req.params.fireId;
-
-    getRoadsForFire(fireId)
-        .then(wrapAsFeatureCollection)
-        .then((roads) => res.json(roads))
-        .catch((err) => {
-            console.error(err);
-            next(err);
-        });
-});
+    return {
+        before,
+        after,
+    };
+}
 
 module.exports = router;
