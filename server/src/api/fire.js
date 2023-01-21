@@ -8,6 +8,7 @@ const {
     getPowerLinesForFire,
     getRoadsForFire,
     getPowerStationsForFire,
+    isBoltCaused,
 } = require("../db/queries");
 
 const router = require("express").Router();
@@ -74,13 +75,18 @@ router.get("/", async (req, res, next) => {
     const fromTime = req.query.from || "2022-08-06";
     const toTime = req.query.to || "2022-08-13";
 
-    getFiresInInterval(fromTime, toTime)
-        .then(wrapAsFeatureCollection)
-        .then((fires) => res.json(fires))
-        .catch((err) => {
-            console.error(err);
-            next(err);
-        });
+    try {
+        const fires = await getFiresInInterval(fromTime, toTime);
+
+        for (const fire of fires) {
+            fire.boltCaused = await isBoltCaused(fire.id);
+        }
+
+        res.json(wrapAsFeatureCollection(fires));
+    } catch (err) {
+        console.error(err);
+        next(err);
+    }
 });
 
 function calculateBiomsPercentage(biome) {

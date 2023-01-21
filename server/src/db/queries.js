@@ -79,6 +79,24 @@ async function getBiomeForFireAndRasters(fireId, rids) {
     return rows;
 }
 
+async function isBoltCaused(fireId) {
+    const sql = `
+        SELECT EXISTS (
+            SELECT 1
+            FROM munje2022 munja, podaci
+            WHERE
+                podaci.id = $1 AND
+                vrijeme_munje BETWEEN
+                    initialdat::timestamp - '1 days'::interval AND
+                    initialdat::timestamp
+                    AND
+                ST_Overlaps(ST_Buffer(podaci.geom, 200), ST_Buffer(munja.geom, greska))
+        );`;
+    const { rows } = await db.query(sql, [fireId]);
+
+    return rows[0].exists;
+}
+
 async function getBoltsBeforeFire(fireId) {
     const sql = `
         SELECT
@@ -170,6 +188,7 @@ module.exports = {
     getRastersBeforeFire,
     getRastersAfterFire,
     getBiomeForFireAndRasters,
+    isBoltCaused,
     getBoltsBeforeFire,
     getPowerStationsForFire,
     getPowerTowersForFire,
