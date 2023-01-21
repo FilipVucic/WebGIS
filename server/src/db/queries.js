@@ -91,6 +91,7 @@ async function isBoltCaused(fireId) {
                     initialdat::timestamp
                     AND
                 ST_Overlaps(ST_Buffer(podaci.geom, 200), ST_Buffer(munja.geom, greska))
+            LIMIT 1
         );`;
     const { rows } = await db.query(sql, [fireId]);
 
