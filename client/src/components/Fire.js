@@ -5,7 +5,7 @@ import { GeoJSON } from "react-leaflet";
 import FireObject from "./FireObject";
 import L from "leaflet";
 
-function Fire() {
+function Fire({dateFrom, dateTo}) {
     const onEachFire = (feature, layer) => {
         const properties = [];
         properties.push(
@@ -79,16 +79,15 @@ function Fire() {
     useEffect(() => {
         const getData = async () => {
             const response = await axios.get(
-                "http://localhost:3000/api/fire?from=2022-08-06&to=2022-11-13"
+                "http://localhost:3000/api/fire?from="
+				+ dateFrom.toISOString().split('T')[0] + "&to=" + dateTo.toISOString().split('T')[0]
             );
             setData(response.data);
         };
         getData();
-    }, []);
+    }, [dateFrom, dateTo]);
 
     if (data) {
-        console.log(currentFireId);
-
         return <DynamicComp />;
     } else {
         return null;
