@@ -8,7 +8,6 @@ import L from "leaflet";
 function Fire() {
     const onEachFire = (feature, layer) => {
         const properties = [];
-		console.log(feature.properties);
         properties.push(
             "Fire area: " + feature.properties.area_ha,
             "Start Time: " + feature.properties.initialdate,
@@ -26,7 +25,13 @@ function Fire() {
         });
     };
 
-    const OnlyFires = () => <GeoJSON onEachFeature={onEachFire} data={data} style={{color:"#c00"}} />;
+    const OnlyFires = () => (
+        <GeoJSON
+            onEachFeature={onEachFire}
+            data={data}
+            style={{ color: "#c00" }}
+        />
+    );
     const FiresWithFireObjects = () => (
         <div>
             <FireObject
