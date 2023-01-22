@@ -1,6 +1,6 @@
 import React from "react";
 import "./App.css";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer } from "react-leaflet";
 import Fire from "./components/Fire";
 
 function App() {
