@@ -9,13 +9,16 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
 function App() {
-	const [dateFrom, setDateFrom] = useState(new Date('2022-08-06'));
-	const [dateTo, setDateTo] = useState(new Date('2022-08-13'));
+	const [dateFrom, setDateFrom] = useState(new Date("2022-08-06"));
+	const [dateTo, setDateTo] = useState(new Date("2022-08-13"));
 
 	return (
 		<div>
 			<div style={{ position: "absolute", zIndex: "2" }}>
-				<DatePicker selected={dateFrom} onChange={(date) => setDateFrom(date)} />
+				<DatePicker
+					selected={dateFrom}
+					onChange={(date) => setDateFrom(date)}
+				/>
 				<DatePicker selected={dateTo} onChange={(date) => setDateTo(date)} />
 			</div>
 
@@ -26,7 +29,7 @@ function App() {
 				/>
 
 				<Fire dateFrom={dateFrom} dateTo={dateTo} />
-				<Bolt />
+				<Bolt dateFrom={dateFrom} dateTo={dateTo} />
 				<ScaleControl position="topleft" />
 			</MapContainer>
 		</div>
