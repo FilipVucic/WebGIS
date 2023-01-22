@@ -167,13 +167,13 @@ async function getRoadsForFire(fireId) {
 }
 
 module.exports = {
-    getFiresInInterval,
-    getRastersBeforeFire,
-    getRastersAfterFire,
     getBiomeForFireAndRasters,
     getBoltsBeforeFire,
+    getFiresInInterval,
+    getPowerLinesForFire,
     getPowerStationsForFire,
     getPowerTowersForFire,
-    getPowerLinesForFire,
+    getRastersAfterFire,
+    getRastersBeforeFire,
     getRoadsForFire,
 };

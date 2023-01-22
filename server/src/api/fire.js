@@ -1,13 +1,13 @@
 const {
+    getBiomeForFireAndRasters,
     getBoltsBeforeFire,
     getFiresInInterval,
-    getBiomeForFireAndRasters,
-    getRastersBeforeFire,
-    getRastersAfterFire,
-    getPowerTowersForFire,
     getPowerLinesForFire,
-    getRoadsForFire,
     getPowerStationsForFire,
+    getPowerTowersForFire,
+    getRastersAfterFire,
+    getRastersBeforeFire,
+    getRoadsForFire,
 } = require("../db/queries");
 
 const router = require("express").Router();
@@ -63,13 +63,6 @@ function wrapAsFeature(a) {
     };
 }
 
-function wrapAsFeatureCollection(as) {
-    return {
-        type: "FeatureCollection",
-        features: as.map(wrapAsFeature),
-    };
-}
-
 router.get("/", async (req, res, next) => {
     const fromTime = req.query.from || "2022-08-06";
     const toTime = req.query.to || "2022-08-13";
@@ -85,8 +78,8 @@ router.get("/", async (req, res, next) => {
         }
 
         res.json({
-            fires: wrapAsFeatureCollection(fires),
-            bolts: wrapAsFeatureCollection(allBolts),
+            fires: fires.map(wrapAsFeature),
+            bolts: allBolts.map(wrapAsFeature),
         });
     } catch (err) {
         console.error(err);
@@ -108,10 +101,10 @@ router.get("/:fireId/details", async (req, res, next) => {
 
         res.json({
             biome,
-            powerStations: wrapAsFeatureCollection(powerStations),
-            powerTowers: wrapAsFeatureCollection(powerTowers),
-            powerLines: wrapAsFeatureCollection(powerLines),
-            roads: wrapAsFeatureCollection(roads),
+            powerStations: powerStations.map(wrapAsFeature),
+            powerTowers: powerTowers.map(wrapAsFeature),
+            powerLines: powerLines.map(wrapAsFeature),
+            roads: roads.map(wrapAsFeature),
         });
     } catch (err) {
         console.error(err);
