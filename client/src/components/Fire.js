@@ -2,10 +2,9 @@ import React, { useEffect, useState } from "react";
 
 import axios from "axios";
 import { GeoJSON } from "react-leaflet";
-import FireObject from "./FireObject"
-import { map } from "leaflet";
+import FireObject from "./FireObject";
 
-function Fire({count, handler}) {
+function Fire() {
 	const onEachFire = (feature, layer) => {
 		const properties = [];
 		properties.push(
@@ -21,26 +20,23 @@ function Fire({count, handler}) {
 		});
 		layer.on("click", function () {
 			setCurrentFireId(feature.id);
-			handler();
 		});
-
 	};
 
-	const OnlyFires = () => (
-		<GeoJSON onEachFeature={onEachFire} data={data} />
-	);
+	const OnlyFires = () => <GeoJSON onEachFeature={onEachFire} data={data} />;
 	const FiresWithFireObjects = () => (
 		<div>
-					<FireObject fireId={currentFireId} objectName='powerStations' />
-					<FireObject fireId={currentFireId} objectName='powerTowers' />
-					<FireObject fireId={currentFireId} objectName='powerLines' />
-					<GeoJSON onEachFeature={onEachFire} data={data} />;
-				</div>
+			<FireObject fireId={currentFireId} objectName="powerStations" />
+			<FireObject fireId={currentFireId} objectName="powerTowers" />
+			<FireObject fireId={currentFireId} objectName="powerLines" />
+			<GeoJSON onEachFeature={onEachFire} data={data} />;
+		</div>
 	);
 	const [data, setData] = useState();
 	const [currentFireId, setCurrentFireId] = useState();
-	const DynamicComp = currentFireId !== undefined ? FiresWithFireObjects : OnlyFires;
-	
+	const DynamicComp =
+		currentFireId !== undefined ? FiresWithFireObjects : OnlyFires;
+
 	useEffect(() => {
 		const getData = async () => {
 			const response = await axios.get(
@@ -52,9 +48,7 @@ function Fire({count, handler}) {
 	}, []);
 
 	if (data) {
-		console.log(currentFireId);
-
-		return (<DynamicComp />);
+		return <DynamicComp />;
 	} else {
 		return null;
 	}
