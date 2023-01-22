@@ -1,6 +1,6 @@
 import React, {useState} from "react";
 import "./App.css";
-import { MapContainer, TileLayer } from "react-leaflet";
+import { MapContainer, ScaleControl, TileLayer } from "react-leaflet";
 import Fire from "./components/Fire";
 import Bolt from "./components/Bolt";
 
@@ -13,16 +13,20 @@ function App() {
 	const [startDate, setStartDate] = useState(new Date());
 
 	return (
+		<div>
+			<DatePicker position='absolute' z-index='2' selected={startDate} onChange={(date) => setStartDate(date)} />
 			<MapContainer center={[44.5, 16]} zoom={7} scrollWheelZoom={true}>
-			
 				<TileLayer
 					attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 					url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
 				/>
-				<DatePicker selected={startDate} onChange={(date) => setStartDate(date)} />
+				
 				<Fire />
 				<Bolt />
+				<ScaleControl position="topleft" />
 			</MapContainer>
+		</div>
+			
 		
 	);
 }
