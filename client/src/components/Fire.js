@@ -14,9 +14,10 @@ function Fire({ dateFrom, dateTo }) {
 			"End Time: " + feature.properties.finaldate,
 			"Location: " + feature.properties.place_name,
 			"Providence: " + feature.properties.providence,
-			"Biomes before: " +
+			"Number of bolts: " + feature.properties.bolt.length,
+			"Biome before: " +
 				JSON.stringify(feature.properties.biome.before, null, 2),
-			"Biomes after: " + JSON.stringify(feature.properties.biome.after, null, 2)
+			"Biome after: " + JSON.stringify(feature.properties.biome.after, null, 2)
 		);
 		layer.on("mouseover", function () {
 			layer.bindPopup(properties.join("<br>")).openPopup();

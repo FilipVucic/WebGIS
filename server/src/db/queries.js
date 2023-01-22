@@ -14,6 +14,8 @@ async function getFiresInInterval(fromTime, toTime) {
         WHERE
             initialdat::timestamp >= $1::timestamp AND
             finaldate::timestamp <= $2::timestamp
+        ORDER BY 
+            area_ha DESC
         LIMIT 50`;
     const { rows } = await db.query(sql, [fromTime, toTime]);
 
