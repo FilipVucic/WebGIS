@@ -73,9 +73,31 @@ router.get("/", async (req, res, next) => {
         for (const fire of fires) {
             const bolts = await getBoltsBeforeFire(fire.id);
             fire.bolt = bolts.map(parseBolt);
+            fire.fill = '#ff0000';
         }
         
         res.json(fires.map(wrapAsFeature));
+    } catch (err) {
+        console.error(err);
+        next(err);
+    }
+});
+
+router.get("/bolts", async (req, res, next) => {
+    const fromTime = req.query.from || "2022-08-06";
+    const toTime = req.query.to || "2022-08-13";
+
+    try {
+        const fires = await getFiresInInterval(fromTime, toTime);
+
+        const allBolts = [];
+        for (const fire of fires) {
+            allBolts.push(
+                ...(await getBoltsBeforeFire(fire.id)).map(parseBolt)
+            );
+        }
+
+        res.json(allBolts.map(wrapAsFeature));
     } catch (err) {
         console.error(err);
         next(err);
