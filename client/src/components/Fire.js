@@ -87,13 +87,13 @@ function Fire({ dateFrom, dateTo }) {
                 fireId={currentFireId}
                 data={fireDetails["powerLines"]}
                 objectName="powerLines"
-                style={{ dashArray: "5,10", color: "#777" }}
+                style={{ dashArray: "5,10", color: "#000", weight: "2" }}
             />
             <FireObject
                 fireId={currentFireId}
                 data={fireDetails["roads"]}
                 objectName="roads"
-                style={{ color: "#ff0" }}
+                style={{ color: "#ff0", weight: "5" }}
             />
             <GeoJSON
                 onEachFeature={onEachFire}
