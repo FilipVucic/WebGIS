@@ -13,7 +13,8 @@ async function getFiresInInterval(fromTime, toTime) {
         FROM podaci
         WHERE
             initialdat::timestamp >= $1::timestamp AND
-            finaldate::timestamp <= $2::timestamp`;
+            finaldate::timestamp <= $2::timestamp
+        ORDER BY area_ha DESC`;
     const { rows } = await db.query(sql, [fromTime, toTime]);
 
     return rows;

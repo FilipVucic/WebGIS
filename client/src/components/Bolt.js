@@ -20,15 +20,24 @@ function Bolt({ dateFrom, dateTo }) {
 		getData();
 	}, [dateFrom, dateTo]);
 
+	const onEachBolt = (feature, layer) => {
+		layer.on("mouseover", function () {
+			layer
+				.bindPopup("Bolt time: " + feature.properties.vrijeme_munje)
+				.openPopup();
+		});
+	};
+
 	if (data) {
 		return (
 			<GeoJSON
+				onEachFeature={onEachBolt}
 				data={data}
 				pointToLayer={(geoJsonPoint, latlng) =>
 					L.marker(latlng, {
 						icon: new L.Icon({
 							iconUrl: require("../icons/bolt.png"),
-							iconSize: [33,44],
+							iconSize: [33, 44],
 						}),
 					})
 				}
