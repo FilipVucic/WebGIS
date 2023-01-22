@@ -73,7 +73,6 @@ router.get("/", async (req, res, next) => {
         for (const fire of fires) {
             const bolts = await getBoltsBeforeFire(fire.id);
             fire.bolt = bolts.map(parseBolt);
-            fire.biome = await getBiomeForFire(fire.id);
         }
 
         res.json(fires.map(wrapAsFeature));

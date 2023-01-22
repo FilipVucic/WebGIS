@@ -6,97 +6,127 @@ import FireObject from "./FireObject";
 import L from "leaflet";
 
 function Fire({ dateFrom, dateTo }) {
-	const onEachFire = (feature, layer) => {
-		const properties = [];
-		properties.push(
-			"Fire area: " + feature.properties.area_ha,
-			"Start Time: " + feature.properties.initialdate,
-			"End Time: " + feature.properties.finaldate,
-			"Location: " + feature.properties.place_name,
-			"Providence: " + feature.properties.providence,
-			"Number of bolts: " + feature.properties.bolt.length,
-			"Biome before: " +
-				JSON.stringify(feature.properties.biome.before, null, 2),
-			"Biome after: " + JSON.stringify(feature.properties.biome.after, null, 2)
-		);
-		layer.on("mouseover", function () {
-			layer.bindPopup(properties.join("<br>")).openPopup();
-		});
-		layer.on("click", function () {
-			setCurrentFireId(feature.id);
-		});
-	};
+    const onEachFire = (feature, layer) => {
+        const properties = [];
+        properties.push(
+            "Fire area: " + feature.properties.area_ha + " ha",
+            "Start Time: " + feature.properties.initialdate,
+            "End Time: " + feature.properties.finaldate,
+            "Location: " + feature.properties.place_name,
+            "Providence: " + feature.properties.providence
+        );
+        let biome = "";
+        if (feature.id === currentFireId && fireDetails.biome) {
+            let before = "";
+            for (const f in fireDetails.biome.before) {
+                before += `<li>${f}: ${fireDetails.biome.before[f]}%</li>`;
+            }
+            if (before)
+                biome += `<br>Biome before:<ul style="margin: 0;">${before}</ul>`;
 
-	const OnlyFires = () => (
-		<GeoJSON onEachFeature={onEachFire} data={data} style={{ color: "#c00" }} />
-	);
-	const FiresWithFireObjects = () => (
-		<div>
-			<FireObject
-				fireId={currentFireId}
-				objectName="powerStations"
-				pointToLayer={(geoJsonPoint, latlng) =>
-					L.marker(latlng, {
-						icon: new L.Icon({
-							iconUrl: require("../icons/wind-turbine.png"),
-							iconSize: [32, 32],
-						}),
-					})
-				}
-			/>
-			<FireObject
-				fireId={currentFireId}
-				objectName="powerTowers"
-				pointToLayer={(geoJsonPoint, latlng) =>
-					L.marker(latlng, {
-						icon: new L.Icon({
-							iconUrl: require("../icons/power-pole-icon.png"),
-							iconSize: [16, 32],
-						}),
-					})
-				}
-			/>
-			<FireObject
-				fireId={currentFireId}
-				objectName="powerLines"
-				style={{ dashArray: "5,10", color: "#777" }}
-			/>
-			<FireObject
-				fireId={currentFireId}
-				objectName="roads"
-				style={{ color: "#ff0" }}
-			/>
-			<GeoJSON
-				onEachFeature={onEachFire}
-				data={data}
-				style={{ color: "#f00", fillColor: "#DA740F" }}
-			/>
-			;
-		</div>
-	);
-	const [data, setData] = useState();
-	const [currentFireId, setCurrentFireId] = useState();
-	const DynamicComp =
-		currentFireId !== undefined ? FiresWithFireObjects : OnlyFires;
+            let after = "";
+            for (const f in fireDetails.biome.after) {
+                after += `<li>${f}: ${fireDetails.biome.after[f]}%</li>`;
+            }
+            if (after)
+                biome += `Biome after:<ul style="margin: 0;">${after}</ul>`;
 
-	useEffect(() => {
-		const getData = async () => {
-			const response = await axios.get(
-				"http://localhost:3000/api/fire?from=" +
-					dateFrom.toISOString().split("T")[0] +
-					"&to=" +
-					dateTo.toISOString().split("T")[0]
-			);
-			setData(response.data);
-		};
-		getData();
-	}, [dateFrom, dateTo]);
+            if (biome) properties.push(biome);
+        }
+        layer.on("mouseover", function () {
+            layer.bindPopup(properties.join("<br>")).openPopup();
+        });
+        layer.on("click", async function () {
+            const details = (
+                await axios.get(
+                    `http://localhost:3000/api/fire/${feature.id}/details`
+                )
+            ).data;
+            setFireDetails(details);
+            setCurrentFireId(feature.id);
+        });
+    };
 
-	if (data) {
-		return <DynamicComp />;
-	} else {
-		return null;
-	}
+    const OnlyFires = () => (
+        <GeoJSON
+            onEachFeature={onEachFire}
+            data={data}
+            style={{ color: "#c00" }}
+        />
+    );
+
+    const FiresWithFireObjects = () => (
+        <div>
+            <FireObject
+                fireId={currentFireId}
+                data={fireDetails["powerStations"]}
+                objectName="powerStations"
+                pointToLayer={(geoJsonPoint, latlng) =>
+                    L.marker(latlng, {
+                        icon: new L.Icon({
+                            iconUrl: require("../icons/wind-turbine.png"),
+                            iconSize: [32, 32],
+                        }),
+                    })
+                }
+            />
+            <FireObject
+                fireId={currentFireId}
+                data={fireDetails["powerTowers"]}
+                objectName="powerTowers"
+                pointToLayer={(geoJsonPoint, latlng) =>
+                    L.marker(latlng, {
+                        icon: new L.Icon({
+                            iconUrl: require("../icons/power-pole-icon.png"),
+                            iconSize: [16, 32],
+                        }),
+                    })
+                }
+            />
+            <FireObject
+                fireId={currentFireId}
+                data={fireDetails["powerLines"]}
+                objectName="powerLines"
+                style={{ dashArray: "5,10", color: "#777" }}
+            />
+            <FireObject
+                fireId={currentFireId}
+                data={fireDetails["roads"]}
+                objectName="roads"
+                style={{ color: "#ff0" }}
+            />
+            <GeoJSON
+                onEachFeature={onEachFire}
+                data={data}
+                style={{ color: "#f00", fillColor: "#DA740F" }}
+            />
+            ;
+        </div>
+    );
+    const [data, setData] = useState();
+    const [currentFireId, setCurrentFireId] = useState();
+    const [fireDetails, setFireDetails] = useState();
+    const DynamicComp =
+        currentFireId !== undefined ? FiresWithFireObjects : OnlyFires;
+
+    useEffect(() => {
+        const getData = async () => {
+            const response = await axios.get(
+                "http://localhost:3000/api/fire?from=" +
+                    dateFrom.toISOString().split("T")[0] +
+                    "&to=" +
+                    dateTo.toISOString().split("T")[0]
+            );
+            setData(response.data);
+        };
+        getData();
+    }, [dateFrom, dateTo]);
+
+    if (data) {
+        return <DynamicComp />;
+    } else {
+        return null;
+    }
 }
 
 export default Fire;
