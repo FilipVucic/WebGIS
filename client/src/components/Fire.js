@@ -3,10 +3,9 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { GeoJSON } from "react-leaflet";
 import FireObject from "./FireObject"
+import { map } from "leaflet";
 
-function Fire() {
-	const [data, setData] = useState();
-	const [currentPowerId, setCurrentPowerId] = useState()
+function Fire({count, handler}) {
 	const onEachFire = (feature, layer) => {
 		const properties = [];
 		properties.push(
@@ -18,13 +17,30 @@ function Fire() {
 			"Number of bolts: " + feature.properties.bolt.length
 		);
 		layer.on("mouseover", function () {
-			setCurrentPowerId(feature.id);
 			layer.bindPopup(properties.join("<br>")).openPopup();
 		});
-		layer.on('mouseout', function () {
-			setCurrentPowerId();
+		layer.on("click", function () {
+			setCurrentFireId(feature.id);
+			handler();
 		});
+
 	};
+
+	const OnlyFires = () => (
+		<GeoJSON onEachFeature={onEachFire} data={data} />
+	);
+	const FiresWithFireObjects = () => (
+		<div>
+					<FireObject fireId={currentFireId} objectName='powerStations' />
+					<FireObject fireId={currentFireId} objectName='powerTowers' />
+					<FireObject fireId={currentFireId} objectName='powerLines' />
+					<GeoJSON onEachFeature={onEachFire} data={data} />;
+				</div>
+	);
+	const [data, setData] = useState();
+	const [currentFireId, setCurrentFireId] = useState();
+	const DynamicComp = currentFireId !== undefined ? FiresWithFireObjects : OnlyFires;
+	
 	useEffect(() => {
 		const getData = async () => {
 			const response = await axios.get(
@@ -36,19 +52,9 @@ function Fire() {
 	}, []);
 
 	if (data) {
-		if (currentPowerId) {
-			return (
-				<div>
-					<FireObject fireId={currentPowerId} objectName='powerStations' />
-					<FireObject fireId={currentPowerId} objectName='powerTowers' />
-					<FireObject fireId={currentPowerId} objectName='powerLines' />
-					<GeoJSON onEachFeature={onEachFire} data={data} />;
-				</div>
-			)
-		} else {
-			return <GeoJSON onEachFeature={onEachFire} data={data} />;
-		}
-		
+		console.log(currentFireId);
+
+		return (<DynamicComp />);
 	} else {
 		return null;
 	}

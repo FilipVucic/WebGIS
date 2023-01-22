@@ -10,6 +10,10 @@ import "react-datepicker/dist/react-datepicker.css";
 function App() {
 
 	const [startDate, setStartDate] = useState(new Date());
+	const [count, setCount] = React.useState(0); 
+	const handleCount = ()=>{ 
+		setCount(count => count + 1); 
+	} 
 	return (
 			<MapContainer center={[44.5, 16]} zoom={7} scrollWheelZoom={true}>
 			
@@ -18,7 +22,7 @@ function App() {
 					url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
 				/>
 				<DatePicker selected={startDate} onChange={(date) => setStartDate(date)} />
-				<Fire/>
+				<Fire count={count} handler={handleCount} />
 			</MapContainer>
 		
 	);

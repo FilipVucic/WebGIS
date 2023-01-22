@@ -4,6 +4,7 @@ import axios from "axios";
 import { GeoJSON } from "react-leaflet";
 
 function FireObject({fireId, objectName}) {
+	
 	const [data, setData] = useState();
 	useEffect(() => {
 		const getData = async () => {
@@ -17,6 +18,7 @@ function FireObject({fireId, objectName}) {
 
 	// render react-leaflet GeoJSON when the data is ready
 	if (data) {
+		console.log("FireObject " + fireId);
 		return <GeoJSON data={data} />;
 	} else {
 		return null;
