@@ -69,18 +69,13 @@ router.get("/", async (req, res, next) => {
 
     try {
         const fires = await getFiresInInterval(fromTime, toTime);
-
-        const allBolts = [];
+        
         for (const fire of fires) {
-            allBolts.push(
-                ...(await getBoltsBeforeFire(fire.id)).map(parseBolt)
-            );
+            const bolts = await getBoltsBeforeFire(fire.id);
+            fire.bolt = bolts.map(parseBolt);
         }
-
-        res.json({
-            fires: fires.map(wrapAsFeature),
-            bolts: allBolts.map(wrapAsFeature),
-        });
+        
+        res.json(fires.map(wrapAsFeature));
     } catch (err) {
         console.error(err);
         next(err);

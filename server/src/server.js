@@ -7,6 +7,8 @@ const routerApi = require("./api");
 
 const app = express();
 
+const cors = require('cors');
+app.use(cors());
 app.use(express.json());
 app.set("json spaces", 2);
 app.use(express.urlencoded({ extended: true }));
