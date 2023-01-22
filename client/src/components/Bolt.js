@@ -18,7 +18,7 @@ function Bolt({ dateFrom, dateTo }) {
 			setData(response.data);
 		};
 		getData();
-	}, []);
+	}, [dateFrom, dateTo]);
 
 	if (data) {
 		return (
