@@ -69,13 +69,13 @@ router.get("/", async (req, res, next) => {
 
     try {
         const fires = await getFiresInInterval(fromTime, toTime);
-        
+
         for (const fire of fires) {
             const bolts = await getBoltsBeforeFire(fire.id);
             fire.bolt = bolts.map(parseBolt);
-            fire.fill = '#ff0000';
+            fire.biome = await getBiomeForFire(fire.id);
         }
-        
+
         res.json(fires.map(wrapAsFeature));
     } catch (err) {
         console.error(err);
