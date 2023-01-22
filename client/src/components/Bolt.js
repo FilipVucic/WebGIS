@@ -27,8 +27,8 @@ function Bolt({ dateFrom, dateTo }) {
 				pointToLayer={(geoJsonPoint, latlng) =>
 					L.marker(latlng, {
 						icon: new L.Icon({
-							iconUrl: require("../icons/flash-thunder-icon.png"),
-							iconSize: [10, 22],
+							iconUrl: require("../icons/bolt.png"),
+							iconSize: [33,44],
 						}),
 					})
 				}
